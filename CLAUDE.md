@@ -47,7 +47,29 @@ Automatic tags: `latest`, `sha-<short>`, `YYYYMMDD` (scheduled builds), semver t
 
 The Arch job is limited to `linux/amd64` only — `archlinux:base-devel` has no official arm64 layer.
 
-## Key Customization Points
+GHA layer cache uses separate scopes (`scope=ubuntu`, `scope=arch`) to avoid cache collisions between the two jobs.
+
+## Included packages
+
+Both `build.sh` (Ubuntu) and `build.arch.sh` (Arch) install equivalent packages:
+
+| Category | Packages |
+|----------|----------|
+| **Shell / CLI** | `zsh`, `mc`, `fzf`, `ripgrep`, `tmux`, `tree`, `jq`, `yq`* |
+| **Network** | `nmap`, `net-tools`, `ipcalc`, `whois`, `mitmproxy`, `rclone`, `sshfs`, `rsync` |
+| **Development** | `geany`, `git`, `gh`, `cmake`, `build-essential`, `shellcheck` |
+| **Runtimes** | `python3` + pip + venv, `nodejs` + npm, `openjdk-21` |
+| **Docker** | `docker-ce`, `docker-ce-cli`, `containerd.io`, `buildx`, `compose` |
+| **Database** | `sqlite3`, `sqlitebrowser` |
+| **Media** | `vlc`, `ffmpeg`, `imagemagick`, `audacity` |
+| **Office** | `libreoffice`, `thunderbird`, `pdfarranger`, `ocrmypdf` |
+| **Virtualisation** | `virt-manager`, `qemu-system-x86`, `libvirt`, `ovmf` |
+
+> \* `yq` is installed as the Go-based binary from GitHub releases (Mike Farah). The `apt` package named `yq` on Ubuntu is a different Python wrapper — **do not use `apt-get install yq`**.
+
+External repos configured at build time: Docker CE official repo, GitHub CLI official repo.
+
+## Key Customisation Points
 
 ### Adding packages
 Edit `build.sh` (Ubuntu) or `build.arch.sh` (Arch). Both scripts use `set -euo pipefail` — a failing command aborts the build.
@@ -60,7 +82,7 @@ Edit the `FROM` line in `Containerfile`:
 
 ### Adding config/dotfiles to the image
 1. Create a `config/` directory at the repo root
-2. Uncomment `COPY config/ /etc/mydistro/` in `Containerfile`
+2. Uncomment `COPY config/ /etc/manzolodistro/` in `Containerfile`
 3. The workflow `paths` trigger already watches `config/**`
 
 ### Multi-arch builds (Ubuntu only)
