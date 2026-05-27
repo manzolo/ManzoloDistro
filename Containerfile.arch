@@ -1,0 +1,23 @@
+# ============================================================
+# Containerfile.arch – Variante Arch Linux
+# Rinomina in "Containerfile" per usare questa invece di Ubuntu
+# ============================================================
+FROM archlinux:base-devel
+
+LABEL org.opencontainers.image.title="manzolodistro-arch"
+LABEL org.opencontainers.image.description="My custom Arch Linux OCI image"
+LABEL org.opencontainers.image.source="https://github.com/manzolo/ManzoloDistro"
+
+# ── Inizializza keyring e aggiorna il sistema ────────────────
+RUN pacman-key --init && \
+    pacman-key --populate archlinux && \
+    pacman -Syu --noconfirm
+
+# ── Script di personalizzazione ─────────────────────────────
+COPY build.arch.sh /tmp/build.sh
+RUN chmod +x /tmp/build.sh && /tmp/build.sh && rm /tmp/build.sh
+
+# ── Pulizia cache pacman ─────────────────────────────────────
+RUN pacman -Sc --noconfirm && rm -rf /var/cache/pacman/pkg/*
+
+CMD ["/bin/bash"]
