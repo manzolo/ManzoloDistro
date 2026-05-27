@@ -34,8 +34,7 @@ pacman -S --noconfirm \
     rclone \
     sshfs \
     ipcalc \
-    whois \
-    mitmproxy
+    whois
 
 # ── Strumenti di rete ────────────────────────────────────────
 pacman -S --noconfirm \
@@ -86,9 +85,6 @@ pacman -S --noconfirm \
     libreoffice-fresh \
     pdfarranger \
     thunderbird
-
-# ocrmypdf non è nei repo ufficiali Arch (solo AUR): installa via pip
-pip install --break-system-packages ocrmypdf
 
 # ── Virtualizzazione ─────────────────────────────────────────
 pacman -S --noconfirm \

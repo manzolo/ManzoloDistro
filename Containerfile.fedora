@@ -1,0 +1,18 @@
+# ============================================================
+# ManzoloDistro – Fedora Bootc variant
+# Base: quay.io/fedora/fedora-bootc:latest
+# Questa variante è bootc-compatible → usata per qcow2 e ISO
+# ============================================================
+FROM quay.io/fedora/fedora-bootc:latest
+
+LABEL org.opencontainers.image.title="manzolodistro-fedora"
+LABEL org.opencontainers.image.description="My custom Linux distro – Fedora Bootc"
+LABEL org.opencontainers.image.source="https://github.com/manzolo/ManzoloDistro"
+
+# ── Script di personalizzazione principale ────────────────────
+COPY build.fedora.sh /tmp/build.sh
+RUN chmod +x /tmp/build.sh && /tmp/build.sh && rm /tmp/build.sh
+
+# ── Copia dotfiles/config di sistema ─────────────────────────
+# Struttura config/ rispecchia il filesystem root (es. config/etc/skel → /etc/skel)
+COPY config/ /

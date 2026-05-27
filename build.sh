@@ -41,8 +41,7 @@ apt-get install -y \
     rclone \
     sshfs \
     ipcalc \
-    whois \
-    mitmproxy
+    whois
 
 # ── Strumenti di rete ────────────────────────────────────────
 apt-get install -y \
@@ -109,7 +108,6 @@ apt-get install -y \
 apt-get install -y \
     libreoffice \
     pdfarranger \
-    ocrmypdf \
     thunderbird
 
 # ── Virtualizzazione ─────────────────────────────────────────

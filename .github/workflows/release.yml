@@ -53,7 +53,6 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          # Riusa la cache del workflow build per non ricostruire da zero
           cache-from: type=gha,scope=ubuntu
           cache-to: type=gha,mode=max,scope=ubuntu
           platforms: linux/amd64,linux/arm64
@@ -124,11 +123,66 @@ jobs:
           echo "${{ steps.meta.outputs.tags }}" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
 
+  # ── Job 3: variante Fedora Bootc ────────────────────────────
+  release-fedora:
+    name: Release Fedora Bootc image
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract image metadata (Fedora)
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/manzolodistro-fedora
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Build and push (Fedora)
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ./Containerfile.fedora
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=fedora
+          cache-to: type=gha,mode=max,scope=fedora
+          platforms: linux/amd64
+
+      - name: Release summary (Fedora)
+        run: |
+          echo "### 🏷️ Fedora Bootc release pubblicata!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Tag:** \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Immagini:**" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "${{ steps.meta.outputs.tags }}" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
   # ── Crea la GitHub Release ───────────────────────────────────
   github-release:
     name: Create GitHub Release
     runs-on: ubuntu-latest
-    needs: [release-ubuntu, release-arch]
+    needs: [release-ubuntu, release-arch, release-fedora]
 
     permissions:
       contents: write
@@ -146,6 +200,11 @@ jobs:
 
             ### OCI images
 
+            **Fedora Bootc** (bootc-image-builder compatible):
+            ```bash
+            docker pull ghcr.io/manzolo/manzolodistro-fedora:${{ github.ref_name }}
+            ```
+
             **Ubuntu:**
             ```bash
             docker pull ghcr.io/manzolo/manzolodistro:${{ github.ref_name }}
@@ -158,7 +217,13 @@ jobs:
 
             ### Con Distrobox
             ```bash
-            distrobox create --name manzolodistro --image ghcr.io/manzolo/manzolodistro:${{ github.ref_name }}
+            distrobox create --name manzolodistro --image ghcr.io/manzolo/manzolodistro-fedora:${{ github.ref_name }}
             distrobox enter manzolodistro
+            ```
+
+            ### VM (qcow2 / ISO)
+            ```bash
+            make qcow2    # genera disco da Fedora Bootc
+            make run-qcow2
             ```
           generate_release_notes: true

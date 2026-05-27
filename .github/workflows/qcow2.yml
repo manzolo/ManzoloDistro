@@ -1,0 +1,62 @@
+name: Build qcow2
+
+# Genera un'immagine qcow2 bootabile dalla variante Fedora Bootc.
+# Richiede un runner GitHub Actions (Ubuntu VM su ext4) perché
+# bootc-image-builder usa overlay-su-ext4, non supportato su host Ubuntu.
+#
+# Uso:
+#   Actions → Build qcow2 → Run workflow → scegli tag (default: latest)
+#
+# Output: artifact "manzolodistro-fedora-qcow2" scaricabile per 7 giorni.
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag immagine GHCR (es. latest, v0.1.2, sha-abc1234)'
+        required: false
+        default: 'latest'
+
+jobs:
+  build-qcow2:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" \
+            | sudo podman login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+      - name: Pull image from GHCR
+        run: |
+          sudo podman pull ghcr.io/manzolo/manzolodistro-fedora:${{ inputs.tag }}
+
+      - name: Generate qcow2 with bootc-image-builder
+        run: |
+          mkdir -p output
+          sudo podman run --rm --privileged \
+            --pull=newer \
+            --security-opt label=type:unconfined_t \
+            -v /var/lib/containers/storage:/var/lib/containers/storage \
+            -v ${{ github.workspace }}/output:/output \
+            quay.io/centos-bootc/bootc-image-builder:latest \
+            --type qcow2 \
+            --rootfs xfs \
+            ghcr.io/manzolo/manzolodistro-fedora:${{ inputs.tag }}
+
+      - name: Show output
+        run: ls -lh output/qcow2/ 2>/dev/null || ls -lh output/
+
+      - name: Upload qcow2 artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: manzolodistro-fedora-qcow2-${{ inputs.tag }}
+          path: output/qcow2/disk.qcow2
+          retention-days: 7
+          if-no-files-found: error
