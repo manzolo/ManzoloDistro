@@ -85,8 +85,10 @@ pacman -S --noconfirm \
 pacman -S --noconfirm \
     libreoffice-fresh \
     pdfarranger \
-    ocrmypdf \
     thunderbird
+
+# ocrmypdf non è nei repo ufficiali Arch (solo AUR): installa via pip
+pip install --break-system-packages ocrmypdf
 
 # ── Virtualizzazione ─────────────────────────────────────────
 pacman -S --noconfirm \
@@ -96,7 +98,17 @@ pacman -S --noconfirm \
     edk2-ovmf
 
 # ── Desktop / compositor ─────────────────────────────────────
-pacman -S --noconfirm niri
+# niri + DankMaterialShell (dms-shell-niri) + dipendenze companion
+# Ref: https://github.com/niri-wm/niri/wiki/Getting-Started
+pacman -S --noconfirm \
+    niri \
+    xwayland-satellite \
+    xdg-desktop-portal-gnome \
+    xdg-desktop-portal-gtk \
+    alacritty \
+    dms-shell-niri \
+    matugen \
+    qt6-multimedia-ffmpeg
 
 # ── Timezone e locale ────────────────────────────────────────
 ln -snf /usr/share/zoneinfo/Europe/Rome /etc/localtime

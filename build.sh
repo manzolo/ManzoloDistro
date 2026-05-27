@@ -120,9 +120,12 @@ apt-get install -y \
     ovmf
 
 # ── Desktop / compositor ─────────────────────────────────────
-apt-get install -y \
-    niri \
-    dms
+# niri (Wayland compositor) + dms (DankMaterialShell) – entrambi dallo stesso PPA
+# Ref: https://github.com/niri-wm/niri/wiki/Getting-Started
+#      https://danklinux.com/docs/dankmaterialshell/installation
+add-apt-repository -y ppa:avengemedia/danklinux
+add-apt-repository -y ppa:avengemedia/dms
+apt-get update && apt-get install -y niri dms
 
 # ── Configurazioni di sistema ────────────────────────────────
 apt-get install -y locales
