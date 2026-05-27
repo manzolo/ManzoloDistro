@@ -139,3 +139,99 @@ jobs:
           echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
           echo "docker pull ghcr.io/${{ github.repository_owner }}/manzolodistro-arch:latest" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+  # ── Job 3: smoke test sulle immagini appena pushate ──────────
+  smoke-test:
+    name: Smoke test
+    runs-on: ubuntu-latest
+    needs: [build-ubuntu, build-arch]
+
+    permissions:
+      packages: read
+
+    steps:
+      - name: Login to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Compute SHA tag
+        id: sha
+        run: echo "tag=sha-${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+
+      - name: Smoke test – Ubuntu
+        run: |
+          IMAGE="ghcr.io/${{ github.repository_owner }}/manzolodistro:${{ steps.sha.outputs.tag }}"
+          run() { docker run --rm "$IMAGE" "$@"; }
+
+          echo "── Shell & CLI ──────────────────────────────"
+          run zsh --version
+          run fzf --version
+          run rg --version
+          run jq --version
+          run yq --version
+
+          echo "── Sviluppo ─────────────────────────────────"
+          run git --version
+          run git config --system --list | grep "alias.co"
+          run gh --version
+          run python3 --version
+          run node --version
+
+          echo "── Docker CLI ───────────────────────────────"
+          run docker --version
+
+          echo "── Desktop ──────────────────────────────────"
+          run niri --version
+          run fuzzel --version
+          run brightnessctl --version
+          run playerctl --version
+
+          echo "── Media ────────────────────────────────────"
+          run ffmpeg -version 2>&1 | head -1
+
+          echo "✅ Smoke test Ubuntu superato!"
+
+      - name: Smoke test – Arch
+        run: |
+          IMAGE="ghcr.io/${{ github.repository_owner }}/manzolodistro-arch:${{ steps.sha.outputs.tag }}"
+          run() { docker run --rm "$IMAGE" "$@"; }
+
+          echo "── Shell & CLI ──────────────────────────────"
+          run zsh --version
+          run fzf --version
+          run rg --version
+          run jq --version
+          run yq --version
+
+          echo "── Sviluppo ─────────────────────────────────"
+          run git --version
+          run git config --system --list | grep "alias.co"
+          run gh --version
+          run python --version
+          run node --version
+
+          echo "── Docker CLI ───────────────────────────────"
+          run docker --version
+
+          echo "── Desktop ──────────────────────────────────"
+          run niri --version
+          run fuzzel --version
+          run brightnessctl --version
+          run playerctl --version
+
+          echo "── Media ────────────────────────────────────"
+          run ffmpeg -version 2>&1 | head -1
+
+          echo "✅ Smoke test Arch superato!"
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "### 🧪 Smoke test – sha ${{ steps.sha.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "| Image | Tag |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|-----|" >> $GITHUB_STEP_SUMMARY
+          echo "| Ubuntu | \`${{ steps.sha.outputs.tag }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Arch   | \`${{ steps.sha.outputs.tag }}\` |" >> $GITHUB_STEP_SUMMARY

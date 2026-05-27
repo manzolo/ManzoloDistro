@@ -1,13 +1,8 @@
-name: Smoke Test – Pull & verify image
+name: Smoke Test – Pull & verify image (manuale)
 
-# Parte automaticamente al termine del workflow di build
+# Solo trigger manuale: usare per testare un tag specifico on-demand.
+# Il test automatico post-build è integrato direttamente in build.yml (job smoke-test).
 on:
-  workflow_run:
-    workflows: ["Build & Publish OCI Image"]
-    types:
-      - completed
-
-  # Permette il trigger manuale
   workflow_dispatch:
     inputs:
       tag:
@@ -24,7 +19,7 @@ jobs:
   smoke-test-ubuntu:
     name: Smoke test – Ubuntu image
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+    if: ${{ github.event_name == 'workflow_dispatch' }}
 
     steps:
       - name: Set image tag
@@ -92,7 +87,7 @@ jobs:
   smoke-test-arch:
     name: Smoke test – Arch Linux image
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+    if: ${{ github.event_name == 'workflow_dispatch' }}
 
     steps:
       - name: Set image tag
