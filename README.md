@@ -143,17 +143,28 @@ Two jobs run **in parallel** on every trigger:
 | `build-ubuntu` | `Containerfile` | `ghcr.io/manzolo/manzolodistro` |
 | `build-arch` | `Containerfile.arch` | `ghcr.io/manzolo/manzolodistro-arch` |
 
+### Rolling builds (`build.yml`)
+
 | Trigger | When |
 |---------|------|
 | **Push** | Any push to `main` touching `Containerfile*`, `build*.sh`, `config/**`, or the workflow file |
-| **Schedule** | Every Monday at 04:00 UTC (keeps base packages up to date) |
+| **Schedule** | Every Monday at 05:00 Italian time / 04:00 UTC (keeps base packages up to date) |
 | **Manual** | From the Actions tab → *Run workflow* |
 
-Auto-generated tags:
-- `latest` — always the latest `main` build
-- `sha-XXXXXXX` — short commit SHA (reproducible)
-- `YYYYMMDD` — date of scheduled builds
-- `v1.2.3` / `1.2` — when a Git tag is pushed
+Tags produced: `latest`, `sha-XXXXXXX`, `YYYYMMDD`
+
+### Versioned releases (`release.yml`)
+
+Push a semver tag to trigger a dedicated release build:
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+Tags produced: `v0.1.0`, `0.1.0`, `0.1`
+
+A GitHub Release is also created automatically with pull instructions for both variants.
 
 ## 🌍 Make the image public
 

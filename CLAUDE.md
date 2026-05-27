@@ -38,12 +38,18 @@ Two jobs run in parallel on every trigger:
 | `build-ubuntu` | `Containerfile` | `ghcr.io/manzolo/manzolodistro` |
 | `build-arch` | `Containerfile.arch` | `ghcr.io/manzolo/manzolodistro-arch` |
 
-Triggers:
+### Rolling builds (`build.yml`)
 - **Push** to `main` touching `Containerfile`, `Containerfile.arch`, `build.sh`, `build.arch.sh`, `config/**`, or the workflow file
-- **Schedule**: every Monday at 04:00 UTC (keeps base packages current)
+- **Schedule**: every Monday at 04:00 UTC / 05:00 Italian time
 - **Manual** via `workflow_dispatch`
 
-Automatic tags: `latest`, `sha-<short>`, `YYYYMMDD` (scheduled builds), semver tags on Git tag push.
+Tags produced: `latest`, `sha-<short>`, `YYYYMMDD`.
+
+### Versioned releases (`release.yml`)
+- Triggered by pushing a `v*.*.*` tag (e.g. `git tag v0.1.0 && git push origin v0.1.0`)
+- Tags produced: `v0.1.0`, `0.1.0`, `0.1`
+- Also creates a GitHub Release automatically (via `softprops/action-gh-release`)
+- Runs only after both image jobs succeed (`needs: [release-ubuntu, release-arch]`)
 
 The Arch job is limited to `linux/amd64` only — `archlinux:base-devel` has no official arm64 layer.
 

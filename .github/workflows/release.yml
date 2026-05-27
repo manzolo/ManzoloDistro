@@ -1,35 +1,23 @@
-name: Build & Publish OCI Image
+name: Release – Build & Publish versioned OCI image
 
+# Triggered only when a version tag (e.g. v0.1.0) is pushed.
+# Publishes semver-tagged images to GHCR and creates a GitHub Release.
 on:
   push:
-    branches:
-      - main
-    paths:
-      - 'Containerfile'
-      - 'Containerfile.arch'
-      - 'build.sh'
-      - 'build.arch.sh'
-      - 'config/**'
-      - '.github/workflows/build.yml'
-
-  # Rebuild automatico settimanale (ogni lunedì alle 05:00 ora italiana / 04:00 UTC)
-  schedule:
-    - cron: '0 4 * * 1'
-
-  # Permette il trigger manuale dalla UI di GitHub
-  workflow_dispatch:
+    tags:
+      - 'v*.*.*'
 
 env:
   REGISTRY: ghcr.io
 
 jobs:
   # ── Job 1: variante Ubuntu ───────────────────────────────────
-  build-ubuntu:
-    name: Build Ubuntu image
+  release-ubuntu:
+    name: Release Ubuntu image
     runs-on: ubuntu-latest
 
     permissions:
-      contents: read
+      contents: write   # needed to create the GitHub Release
       packages: write
 
     steps:
@@ -49,9 +37,10 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/manzolodistro
           tags: |
-            type=raw,value=latest,enable={{is_default_branch}}
-            type=sha,prefix=sha-,format=short
-            type=schedule,pattern={{date 'YYYYMMDD'}}
+            # v0.1.0  →  0.1.0
+            type=semver,pattern={{version}}
+            # v0.1.0  →  0.1
+            type=semver,pattern={{major}}.{{minor}}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -64,30 +53,29 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          # Riusa la cache del workflow build per non ricostruire da zero
           cache-from: type=gha,scope=ubuntu
           cache-to: type=gha,mode=max,scope=ubuntu
           platforms: linux/amd64,linux/arm64
 
-      - name: Image digest summary (Ubuntu)
+      - name: Release summary (Ubuntu)
         run: |
-          echo "### ✅ Ubuntu image pubblicata!" >> $GITHUB_STEP_SUMMARY
+          echo "### 🏷️ Ubuntu release pubblicata!" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Tags:**" >> $GITHUB_STEP_SUMMARY
+          echo "**Tag:** \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Immagini:**" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           echo "${{ steps.meta.outputs.tags }}" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
-          echo "docker pull ghcr.io/${{ github.repository_owner }}/manzolodistro:latest" >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
 
   # ── Job 2: variante Arch Linux ───────────────────────────────
-  build-arch:
-    name: Build Arch Linux image
+  release-arch:
+    name: Release Arch Linux image
     runs-on: ubuntu-latest
 
     permissions:
-      contents: read
+      contents: write
       packages: write
 
     steps:
@@ -107,9 +95,8 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/manzolodistro-arch
           tags: |
-            type=raw,value=latest,enable={{is_default_branch}}
-            type=sha,prefix=sha-,format=short
-            type=schedule,pattern={{date 'YYYYMMDD'}}
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -124,18 +111,54 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=arch
           cache-to: type=gha,mode=max,scope=arch
-          # Arch Linux ha pacchetti solo per amd64 (x86_64)
           platforms: linux/amd64
 
-      - name: Image digest summary (Arch)
+      - name: Release summary (Arch)
         run: |
-          echo "### ✅ Arch Linux image pubblicata!" >> $GITHUB_STEP_SUMMARY
+          echo "### 🏷️ Arch Linux release pubblicata!" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Tags:**" >> $GITHUB_STEP_SUMMARY
+          echo "**Tag:** \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Immagini:**" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           echo "${{ steps.meta.outputs.tags }}" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
-          echo "docker pull ghcr.io/${{ github.repository_owner }}/manzolodistro-arch:latest" >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+  # ── Crea la GitHub Release ───────────────────────────────────
+  github-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: [release-ubuntu, release-arch]
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "ManzoloDistro ${{ github.ref_name }}"
+          body: |
+            ## 🐧 ManzoloDistro ${{ github.ref_name }}
+
+            ### OCI images
+
+            **Ubuntu:**
+            ```bash
+            docker pull ghcr.io/manzolo/manzolodistro:${{ github.ref_name }}
+            ```
+
+            **Arch Linux:**
+            ```bash
+            docker pull ghcr.io/manzolo/manzolodistro-arch:${{ github.ref_name }}
+            ```
+
+            ### Con Distrobox
+            ```bash
+            distrobox create --name manzolodistro --image ghcr.io/manzolo/manzolodistro:${{ github.ref_name }}
+            distrobox enter manzolodistro
+            ```
+          generate_release_notes: true
