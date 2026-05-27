@@ -70,7 +70,7 @@ Both `build.sh` (Ubuntu) and `build.arch.sh` (Arch) install equivalent packages:
 | **Media** | `vlc`, `ffmpeg`, `imagemagick`, `audacity` |
 | **Office** | `libreoffice`, `thunderbird`, `pdfarranger`, `ocrmypdf` |
 | **Virtualisation** | `virt-manager`, `qemu-system-x86`, `libvirt`, `ovmf` |
-| **Desktop** | `niri` (Wayland compositor), `dms` |
+| **Desktop** | `niri`, `dms` ([DankMaterialShell](https://danklinux.com/docs/dankmaterialshell/installation)), `fuzzel`, `ptyxis`, `alacritty`, `brightnessctl`, `playerctl` |
 
 > \* `yq` is installed as the Go-based binary from GitHub releases (Mike Farah). The `apt` package named `yq` on Ubuntu is a different Python wrapper — **do not use `apt-get install yq`**.
 
@@ -88,9 +88,11 @@ Edit the `FROM` line in `Containerfile`:
 - For Arch, edit `Containerfile.arch` instead
 
 ### Adding config/dotfiles to the image
-1. Create a `config/` directory at the repo root
-2. Uncomment `COPY config/ /etc/manzolodistro/` in `Containerfile`
-3. The workflow `paths` trigger already watches `config/**`
+The `config/` directory mirrors the filesystem root and is copied verbatim into the image:
+```
+config/etc/skel/.config/niri/   →   /etc/skel/.config/niri/
+```
+Files placed under `config/etc/skel/` are automatically copied to every new user's home at account creation. The niri config (including `dms/binds.kdl` with all keybindings) is already included there.
 
 ### Multi-arch builds (Ubuntu only)
 The Ubuntu job targets `linux/amd64,linux/arm64`. Remove architectures you don't need to speed up builds.

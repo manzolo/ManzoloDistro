@@ -119,13 +119,20 @@ apt-get install -y \
     libvirt-daemon-system \
     ovmf
 
-# ── Desktop / compositor ─────────────────────────────────────
+# ── Desktop / compositor e dipendenze keybinding ────────────
 # niri (Wayland compositor) + dms (DankMaterialShell) – entrambi dallo stesso PPA
 # Ref: https://github.com/niri-wm/niri/wiki/Getting-Started
 #      https://danklinux.com/docs/dankmaterialshell/installation
 add-apt-repository -y ppa:avengemedia/danklinux
 add-apt-repository -y ppa:avengemedia/dms
-apt-get update && apt-get install -y niri dms
+apt-get update && apt-get install -y \
+    niri \
+    dms \
+    fuzzel \
+    ptyxis \
+    alacritty \
+    brightnessctl \
+    playerctl
 
 # ── Configurazioni di sistema ────────────────────────────────
 apt-get install -y locales
@@ -143,6 +150,7 @@ alias la='ls -A'
 alias l='ls -CF'
 alias gs='git status'
 alias gp='git pull'
+alias gco='git checkout'
 alias ..='cd ..'
 alias ...='cd ../..'
 export HISTSIZE=10000

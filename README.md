@@ -100,7 +100,7 @@ With this approach the OS becomes **immutable and atomic**: it updates like a co
 | **Media** | `vlc`, `ffmpeg`, `imagemagick`, `audacity` |
 | **Office** | `libreoffice`, `thunderbird`, `pdfarranger`, `ocrmypdf` |
 | **Virtualisation** | `virt-manager`, `qemu-system-x86`, `libvirt`, `ovmf` |
-| **Desktop** | `niri` (Wayland compositor), `dms` |
+| **Desktop** | `niri`, `dms` ([DankMaterialShell](https://danklinux.com/docs/dankmaterialshell/installation)), `fuzzel`, `ptyxis`, `alacritty`, `brightnessctl`, `playerctl` |
 
 > \* `yq` is the Go-based binary by [Mike Farah](https://github.com/mikefarah/yq), installed from GitHub releases — **not** the Python `apt` wrapper of the same name.
 
@@ -128,11 +128,15 @@ Edit the `FROM` line in `Containerfile`:
 | Arch Linux | use `Containerfile.arch` |
 
 ### Embed config files
-Uncomment in `Containerfile`:
-```dockerfile
-COPY config/ /etc/manzolodistro/
+The `config/` directory mirrors the filesystem root and is copied verbatim into the image at build time. Files under `config/etc/skel/` are automatically distributed to every new user's home at account creation.
+
+The niri configuration (keybindings, dms layout, colours, etc.) is already included under `config/etc/skel/.config/niri/`.
+
+To add more files, simply place them in `config/` following the same path structure:
 ```
-then create the `config/` directory with your files.
+config/etc/skel/.bashrc          →  /etc/skel/.bashrc
+config/usr/share/backgrounds/…   →  /usr/share/backgrounds/…
+```
 
 ## 🤖 CI/CD – Build triggers
 

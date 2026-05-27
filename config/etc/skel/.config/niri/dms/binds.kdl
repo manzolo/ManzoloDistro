@@ -1,0 +1,11 @@
+binds {
+    Mod+Alt+L hotkey-overlay-title="Lock Screen" { spawn "dms" "ipc" "call" "lock" "lock"; }
+    Mod+Alt+Up hotkey-overlay-title="Volume Up (10%)" { spawn "dms" "ipc" "call" "audio" "increment" "10"; }
+    Mod+Alt+Down hotkey-overlay-title="Volume Down (10%)" { spawn "dms" "ipc" "call" "audio" "decrement" "10"; }
+    Mod+Shift+Q hotkey-overlay-title="Power Menu: Open" { spawn "dms" "ipc" "call" "powermenu" "open"; }
+    Ctrl+Alt+Delete hotkey-overlay-title="Power Menu: Open" { spawn "dms" "ipc" "call" "powermenu" "open"; }
+    Alt+F4 repeat=false { close-window; }
+    Mod+T hotkey-overlay-title="Open a Terminal: ptyxis" { spawn "ptyxis"; }
+    Super+E hotkey-overlay-title="Nautilus" { spawn "nautilus"; }
+    Mod+Shift+E hotkey-overlay-title="Toggle Shortcuts Inhibit" { toggle-keyboard-shortcuts-inhibit; }
+}

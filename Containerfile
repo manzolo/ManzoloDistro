@@ -19,8 +19,9 @@ RUN apt-get update && apt-get upgrade -y && apt-get autoremove -y
 COPY build.sh /tmp/build.sh
 RUN chmod +x /tmp/build.sh && /tmp/build.sh && rm /tmp/build.sh
 
-# ── 3. Copia dotfiles/config di sistema (opzionale) ─────────
-# COPY config/ /etc/manzolodistro/
+# ── 3. Copia dotfiles/config di sistema ─────────────────────
+# Struttura config/ rispecchia il filesystem root (es. config/etc/skel → /etc/skel)
+COPY config/ /
 
 # ── 4. Pulizia finale cache apt ──────────────────────────────
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*

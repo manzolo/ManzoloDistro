@@ -97,8 +97,8 @@ pacman -S --noconfirm \
     libvirt \
     edk2-ovmf
 
-# ── Desktop / compositor ─────────────────────────────────────
-# niri + DankMaterialShell (dms-shell-niri) + dipendenze companion
+# ── Desktop / compositor e dipendenze keybinding ────────────
+# niri + DankMaterialShell (dms-shell-niri) + companion + keybinding deps
 # Ref: https://github.com/niri-wm/niri/wiki/Getting-Started
 pacman -S --noconfirm \
     niri \
@@ -108,7 +108,11 @@ pacman -S --noconfirm \
     alacritty \
     dms-shell-niri \
     matugen \
-    qt6-multimedia-ffmpeg
+    qt6-multimedia-ffmpeg \
+    fuzzel \
+    ptyxis \
+    brightnessctl \
+    playerctl
 
 # ── Timezone e locale ────────────────────────────────────────
 ln -snf /usr/share/zoneinfo/Europe/Rome /etc/localtime
@@ -124,6 +128,7 @@ alias ll='ls -lah --color=auto'
 alias la='ls -A'
 alias gs='git status'
 alias gp='git pull'
+alias gco='git checkout'
 alias ..='cd ..'
 alias ...='cd ../..'
 alias pac='pacman -S'
