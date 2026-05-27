@@ -64,6 +64,7 @@ Both `build.sh` (Ubuntu) and `build.arch.sh` (Arch) install equivalent packages:
 | **Media** | `vlc`, `ffmpeg`, `imagemagick`, `audacity` |
 | **Office** | `libreoffice`, `thunderbird`, `pdfarranger`, `ocrmypdf` |
 | **Virtualisation** | `virt-manager`, `qemu-system-x86`, `libvirt`, `ovmf` |
+| **Desktop** | `niri` (Wayland compositor), `dms` |
 
 > \* `yq` is installed as the Go-based binary from GitHub releases (Mike Farah). The `apt` package named `yq` on Ubuntu is a different Python wrapper — **do not use `apt-get install yq`**.
 

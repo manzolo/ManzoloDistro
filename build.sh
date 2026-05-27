@@ -119,6 +119,11 @@ apt-get install -y \
     libvirt-daemon-system \
     ovmf
 
+# ── Desktop / compositor ─────────────────────────────────────
+apt-get install -y \
+    niri \
+    dms
+
 # ── Configurazioni di sistema ────────────────────────────────
 apt-get install -y locales
 locale-gen it_IT.UTF-8

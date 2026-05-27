@@ -95,6 +95,9 @@ pacman -S --noconfirm \
     libvirt \
     edk2-ovmf
 
+# ── Desktop / compositor ─────────────────────────────────────
+pacman -S --noconfirm niri
+
 # ── Timezone e locale ────────────────────────────────────────
 ln -snf /usr/share/zoneinfo/Europe/Rome /etc/localtime
 echo "LANG=it_IT.UTF-8" > /etc/locale.conf

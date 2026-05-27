@@ -20,7 +20,7 @@ COPY build.sh /tmp/build.sh
 RUN chmod +x /tmp/build.sh && /tmp/build.sh && rm /tmp/build.sh
 
 # ── 3. Copia dotfiles/config di sistema (opzionale) ─────────
-# COPY config/ /etc/mydistro/
+# COPY config/ /etc/manzolodistro/
 
 # ── 4. Pulizia finale cache apt ──────────────────────────────
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
