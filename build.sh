@@ -141,6 +141,9 @@ update-locale LANG=it_IT.UTF-8
 ln -snf /usr/share/zoneinfo/Europe/Rome /etc/localtime
 echo "Europe/Rome" > /etc/timezone
 
+# ── Git alias globali ────────────────────────────────────────
+git config --system alias.co checkout
+
 # ── Alias e customizzazioni shell globali ────────────────────
 cat >> /etc/bash.bashrc << 'EOF'
 
@@ -150,7 +153,6 @@ alias la='ls -A'
 alias l='ls -CF'
 alias gs='git status'
 alias gp='git pull'
-alias gco='git checkout'
 alias ..='cd ..'
 alias ...='cd ../..'
 export HISTSIZE=10000

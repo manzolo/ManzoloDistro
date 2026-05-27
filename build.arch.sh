@@ -120,6 +120,9 @@ echo "LANG=it_IT.UTF-8" > /etc/locale.conf
 echo "it_IT.UTF-8 UTF-8" >> /etc/locale.gen
 locale-gen
 
+# ── Git alias globali ────────────────────────────────────────
+git config --system alias.co checkout
+
 # ── Alias globali ────────────────────────────────────────────
 cat >> /etc/bash.bashrc << 'EOF'
 
@@ -128,7 +131,6 @@ alias ll='ls -lah --color=auto'
 alias la='ls -A'
 alias gs='git status'
 alias gp='git pull'
-alias gco='git checkout'
 alias ..='cd ..'
 alias ...='cd ../..'
 alias pac='pacman -S'

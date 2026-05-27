@@ -1,0 +1,158 @@
+name: Smoke Test – Pull & verify image
+
+# Parte automaticamente al termine del workflow di build
+on:
+  workflow_run:
+    workflows: ["Build & Publish OCI Image"]
+    types:
+      - completed
+
+  # Permette il trigger manuale
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Image tag to test (default: latest)'
+        required: false
+        default: 'latest'
+
+env:
+  UBUNTU_IMAGE: ghcr.io/manzolo/manzolodistro
+  ARCH_IMAGE:   ghcr.io/manzolo/manzolodistro-arch
+
+jobs:
+  # Esegue solo se il workflow di build ha avuto successo
+  smoke-test-ubuntu:
+    name: Smoke test – Ubuntu image
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+
+    steps:
+      - name: Set image tag
+        id: tag
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "tag=${{ inputs.tag }}" >> $GITHUB_OUTPUT
+          else
+            echo "tag=latest" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Login to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Pull Ubuntu image
+        run: docker pull ${{ env.UBUNTU_IMAGE }}:${{ steps.tag.outputs.tag }}
+
+      - name: Verify packages
+        run: |
+          IMAGE="${{ env.UBUNTU_IMAGE }}:${{ steps.tag.outputs.tag }}"
+          run() { docker run --rm "$IMAGE" "$@"; }
+
+          echo "── Shell & CLI ──────────────────────────────"
+          run zsh --version
+          run fzf --version
+          run rg --version
+          run mc --version
+          run jq --version
+          run yq --version
+
+          echo "── Sviluppo ─────────────────────────────────"
+          run git --version
+          run git config --system --list | grep "alias.co"
+          run gh --version
+          run python3 --version
+          run node --version
+          run java --version
+
+          echo "── Docker CLI ───────────────────────────────"
+          run docker --version
+
+          echo "── Desktop ──────────────────────────────────"
+          run niri --version
+          run fuzzel --version
+          run brightnessctl --version
+          run playerctl --version
+          run alacritty --version
+
+          echo "── Office / media ───────────────────────────"
+          run ffmpeg -version 2>&1 | head -1
+          run convert --version 2>&1 | head -1
+
+          echo "✅ Tutti i controlli Ubuntu superati!"
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "### 🧪 Smoke test Ubuntu – ${{ steps.tag.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "Image: \`${{ env.UBUNTU_IMAGE }}:${{ steps.tag.outputs.tag }}\`" >> $GITHUB_STEP_SUMMARY
+
+  smoke-test-arch:
+    name: Smoke test – Arch Linux image
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+
+    steps:
+      - name: Set image tag
+        id: tag
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "tag=${{ inputs.tag }}" >> $GITHUB_OUTPUT
+          else
+            echo "tag=latest" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Login to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Pull Arch image
+        run: docker pull ${{ env.ARCH_IMAGE }}:${{ steps.tag.outputs.tag }}
+
+      - name: Verify packages
+        run: |
+          IMAGE="${{ env.ARCH_IMAGE }}:${{ steps.tag.outputs.tag }}"
+          run() { docker run --rm "$IMAGE" "$@"; }
+
+          echo "── Shell & CLI ──────────────────────────────"
+          run zsh --version
+          run fzf --version
+          run rg --version
+          run mc --version
+          run jq --version
+          run yq --version
+
+          echo "── Sviluppo ─────────────────────────────────"
+          run git --version
+          run git config --system --list | grep "alias.co"
+          run gh --version
+          run python --version
+          run node --version
+          run java --version
+
+          echo "── Docker CLI ───────────────────────────────"
+          run docker --version
+
+          echo "── Desktop ──────────────────────────────────"
+          run niri --version
+          run fuzzel --version
+          run brightnessctl --version
+          run playerctl --version
+          run alacritty --version
+
+          echo "── Office / media ───────────────────────────"
+          run ffmpeg -version 2>&1 | head -1
+          run convert --version 2>&1 | head -1
+
+          echo "✅ Tutti i controlli Arch superati!"
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "### 🧪 Smoke test Arch – ${{ steps.tag.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "Image: \`${{ env.ARCH_IMAGE }}:${{ steps.tag.outputs.tag }}\`" >> $GITHUB_STEP_SUMMARY
