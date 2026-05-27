@@ -4,9 +4,9 @@
 # ============================================================
 set -euo pipefail
 
-echo "==> Inizio personalizzazione mydistro (Arch)..."
+echo "==> Inizio personalizzazione manzolodistro (Arch)..."
 
-# ── Pacchetti base ───────────────────────────────────────────
+# ── Pacchetti di sistema essenziali ─────────────────────────
 pacman -S --noconfirm \
     curl \
     wget \
@@ -21,21 +21,79 @@ pacman -S --noconfirm \
     jq \
     tmux \
     bash-completion \
-    man-db \
+    cmake \
+    base-devel
+
+# ── Strumenti CLI ────────────────────────────────────────────
+pacman -S --noconfirm \
+    mc \
+    zsh \
+    fzf \
+    ripgrep \
+    shellcheck \
+    rclone \
+    sshfs \
+    ipcalc \
+    whois \
+    mitmproxy
+
+# ── Strumenti di rete ────────────────────────────────────────
+pacman -S --noconfirm \
+    net-tools \
+    iputils \
+    bind \
     openssh \
     rsync \
-    nmap \
-    net-tools \
-    bind
+    nmap
 
-# ── Sviluppo (decommentare ciò che serve) ───────────────────
-# pacman -S --noconfirm python python-pip nodejs npm go jdk-openjdk
+# ── Sviluppo ────────────────────────────────────────────────
+pacman -S --noconfirm \
+    geany \
+    python \
+    python-pip \
+    nodejs \
+    npm \
+    jdk21-openjdk \
+    sqlite \
+    sqlitebrowser
 
-# ── yay (AUR helper) – richiede un utente non-root ──────────
-# Crea utente builder temporaneo per compilare yay
-# useradd -m builder && echo "builder ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
-# su builder -c "git clone https://aur.archlinux.org/yay.git /tmp/yay && cd /tmp/yay && makepkg -si --noconfirm"
-# userdel -r builder
+# ── yq (Go-based, Mike Farah) ────────────────────────────────
+# NOTA: 'go-yq' è in AUR; si installa dal binario ufficiale per semplicità.
+YQ_VERSION=$(curl -fsSL https://api.github.com/repos/mikefarah/yq/releases/latest \
+    | grep '"tag_name"' | cut -d'"' -f4)
+curl -fsSL "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64" \
+    -o /usr/local/bin/yq
+chmod +x /usr/local/bin/yq
+
+# ── Docker CE ────────────────────────────────────────────────
+pacman -S --noconfirm \
+    docker \
+    docker-buildx \
+    docker-compose
+
+# ── GitHub CLI ───────────────────────────────────────────────
+pacman -S --noconfirm github-cli
+
+# ── Media ────────────────────────────────────────────────────
+pacman -S --noconfirm \
+    vlc \
+    ffmpeg \
+    imagemagick \
+    audacity
+
+# ── Office / documenti ───────────────────────────────────────
+pacman -S --noconfirm \
+    libreoffice-fresh \
+    pdfarranger \
+    ocrmypdf \
+    thunderbird
+
+# ── Virtualizzazione ─────────────────────────────────────────
+pacman -S --noconfirm \
+    virt-manager \
+    qemu-desktop \
+    libvirt \
+    edk2-ovmf
 
 # ── Timezone e locale ────────────────────────────────────────
 ln -snf /usr/share/zoneinfo/Europe/Rome /etc/localtime
@@ -46,15 +104,18 @@ locale-gen
 # ── Alias globali ────────────────────────────────────────────
 cat >> /etc/bash.bashrc << 'EOF'
 
-# === MyDistro Arch customizations ===
+# === ManzoloDistro Arch customizations ===
 alias ll='ls -lah --color=auto'
 alias la='ls -A'
 alias gs='git status'
+alias gp='git pull'
 alias ..='cd ..'
 alias ...='cd ../..'
 alias pac='pacman -S'
 alias pacu='pacman -Syu'
 alias pacr='pacman -Rns'
+export HISTSIZE=10000
+export HISTFILESIZE=20000
 EOF
 
 echo "==> Build Arch completato!"
